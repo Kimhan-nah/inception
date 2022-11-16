@@ -7,12 +7,12 @@
 		- [가상화 종류](#가상화-종류)
 - [3. Container](#3-container)
 - [4. Docker](#4-docker)
-		- [Docker Architecture](#docker-architecture)
-		- [Docker Daemon (`dockerd`)](#docker-daemon-dockerd)
-		- [Docker Client (`docker`)](#docker-client-docker)
-		- [Docker Registries](#docker-registries)
-		- [Docker Objects](#docker-objects)
-		- [PID 1 (`init system`) in Docker](#pid-1-init-system-in-docker)
+	- [Docker Architecture](#docker-architecture)
+	- [Docker Daemon (`dockerd`)](#docker-daemon-dockerd)
+	- [Docker Client (`docker`)](#docker-client-docker)
+	- [Docker Registries](#docker-registries)
+	- [Docker Objects](#docker-objects)
+	- [PID 1 (`init system`) in Docker](#pid-1-init-system-in-docker)
 
 # Inception 
 - Summary: This document is a System Administration related exercise.
@@ -82,7 +82,7 @@
 
 # 4. Docker
 
-### Docker Architecture
+## Docker Architecture
 
 ![virtualization](./asset/virtualization.png)
 
@@ -90,26 +90,26 @@
     - 동일한 시스템에서 실행 or 클라이언트를 원격 데몬에 연결 가능
     - UNIX 소켓 or 네트워크 인터페이스를 통해 `REST API` 사용하여 통신
 
-### Docker Daemon (`dockerd`)
+## Docker Daemon (`dockerd`)
 
 - 실제 동작하는 프로세스
 - 도커 엔진의 기능을 수행 후 응답하는 프로세스
 - API 요청을 수신하고 이미지, 컨테이너, 네트워크 및 볼륨과 같은 도커 객체를 관리
 
-### Docker Client (`docker`)
+## Docker Client (`docker`)
 
 - 사용자가 Docker와 상호작용하는 기본 방법
 - `docker run`과 같은 명령 사용 → 클라이언트가 명령을 API로 `dockerd`로 보내서 실행
 - 또다른 도커 클라이언트 is `Docker Compose`
 
-### Docker Registries
+## Docker Registries
 
 - Docker Image 저장소
 - 도커는 default로 Docker Hub에서 Image 찾음
 - own private registry도 가능
 - default 공용 레지스트리 :  Docker Hub
 
-### Docker Objects
+## Docker Objects
 
 - **Images**
     - 컨테이너를 빌드하기 위한 read-only 바이너리 파일
@@ -120,7 +120,7 @@
 - Volumes
 - Plugins
 
-### PID 1 (`init system`) in Docker
+## PID 1 (`init system`) in Docker
 
 - 리눅스 커널의 PID와 마찬가지로 컨테이너에서 실행된 첫 번째 프로세스는 PID 1을 얻는다
 - PID 1로 등록된 단 하나의 프로세스만을 컨테이너가 담당하겠다는 의미
