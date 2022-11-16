@@ -1,3 +1,19 @@
+# Table of Contents
+- [Table of Contents](#table-of-contents)
+- [Inception](#inception)
+- [1. Alpine Linux](#1-alpine-linux)
+- [2. Virtualization](#2-virtualization)
+		- [가상화란?](#가상화란)
+		- [가상화 종류](#가상화-종류)
+- [3. Container](#3-container)
+- [4. Docker](#4-docker)
+		- [Docker Architecture](#docker-architecture)
+		- [Docker Daemon (`dockerd`)](#docker-daemon-dockerd)
+		- [Docker Client (`docker`)](#docker-client-docker)
+		- [Docker Registries](#docker-registries)
+		- [Docker Objects](#docker-objects)
+		- [PID 1 (`init system`) in Docker](#pid-1-init-system-in-docker)
+
 # Inception 
 - Summary: This document is a System Administration related exercise.
 - Version: 1
@@ -45,7 +61,7 @@
 
 ### 가상화 종류
 
-![Screen Shot 2022-11-16 at 3.24.06 PM.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/ce278b8e-178b-42a8-b5bb-eed357aaf148/Screen_Shot_2022-11-16_at_3.24.06_PM.png)
+![img](https://docs.docker.com/engine/images/architecture.svg)
 
 - 베어메탈
     - ex) 멀티 부팅
@@ -68,7 +84,7 @@
 
 ### Docker Architecture
 
-![Screen Shot 2022-11-16 at 3.25.42 PM.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/016495a5-0511-48e3-bdf9-78925594d840/Screen_Shot_2022-11-16_at_3.25.42_PM.png)
+![virtualization](./asset/virtualization.png)
 
 - Docker Daemon ↔ Docker Client 통신
     - 동일한 시스템에서 실행 or 클라이언트를 원격 데몬에 연결 가능
