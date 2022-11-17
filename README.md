@@ -61,7 +61,7 @@
 
 ### 가상화 종류
 
-![img](https://docs.docker.com/engine/images/architecture.svg)
+![virtualization](./asset/virtualization.png)
 
 - 베어메탈
     - ex) 멀티 부팅
@@ -84,7 +84,7 @@
 
 ## Docker Architecture
 
-![virtualization](./asset/virtualization.png)
+![img](https://docs.docker.com/engine/images/architecture.svg)
 
 - Docker Daemon ↔ Docker Client 통신
     - 동일한 시스템에서 실행 or 클라이언트를 원격 데몬에 연결 가능
