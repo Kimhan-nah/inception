@@ -12,6 +12,11 @@
 	- [Docker Client (`docker`)](#docker-client-docker)
 	- [Docker Registries](#docker-registries)
 	- [Docker Objects](#docker-objects)
+		- [**Images**](#images)
+		- [**Containers**](#containers)
+		- [Networks](#networks)
+		- [Volumes](#volumes)
+		- [Plugins](#plugins)
 	- [PID 1 (`init system`) in Docker](#pid-1-init-system-in-docker)
 
 # Inception 
@@ -111,14 +116,52 @@
 
 ## Docker Objects
 
-- **Images**
-    - 컨테이너를 빌드하기 위한 read-only 바이너리 파일
-- **Containers**
-    - 실행가능한 이미지의 인스턴스
-    - 사용자는 컨테이너를 Docker API를 통해 생성, 삭제 수정, 이동
-- Networks
-- Volumes
-- Plugins
+### **Images**
+
+- 컨테이너를 빌드하기 위한 read-only 바이너리 파일
+
+### **Containers**
+
+- 실행가능한 이미지의 인스턴스
+- 사용자는 컨테이너를 Docker API를 통해 생성, 삭제 수정, 이동
+
+### Networks
+
+### Volumes
+
+- 컨테이너에서 생성되고 사용되는 데이터를 유지하기 위해 선호되는 메커니즘
+- 컨테이너와 관련된 특별한 유형의 디렉터리
+- 모든 데이터 유형을 저장할 수 있음 (코드, 로그 파일 등)
+- 컨테이너 간에 데이터 공유 가능
+- 이미지가 업데이트 될 때 데이터 볼륨에 영향 X → 컨테이너가 컴퓨터에서 삭제된 경우에도 데이터 볼륨은 남아서 여전히 제어 가능
+- `bind mount`는 호스트 시스템의 디렉토리 구조와 OS에 따라 다르지만 `Volumes`은 도커에서 완전히 관리함
+    - `volumes` VS `bind mount`
+        
+        ### Volumes
+        
+        ![https://docs.docker.com/storage/images/types-of-mounts-volume.png](https://docs.docker.com/storage/images/types-of-mounts-volume.png)
+        
+        > volumes (출처 : docker 공식 문서 [Use volumes](https://docs.docker.com/storage/volumes/))
+        
+        - `volumes`가 `bind mount` 보다 백업 또는 마이그레이션이 쉬움
+        - Docker CLI command 또는 Docker API 사용하여 `Volumes` 관리
+        - `Volumes`는 Linux, Windows 컨테이너 모두에서 작동함
+        - 여러 컨테이너 간에 `Volumes`을 보다 안전하게 공유할 수 있음
+        - `Volumes` 드라이버를 사용하면 원격 호스트 또는 클라우드 제공자에 `Volumes`을 저장하거나 `Volumes`의 내용을 암호화하거나 다른 기능을 추가할 수 있음
+        - 새 `Volumes`는 컨테이너에 의해 미리 채워진 콘텐츠를 가질 수 있음
+        - Docker Desktop의 `Volumes`는 Mac, Windows 호스트의 `bind mount`보다 훨씬 높은 성능 제공
+        
+        ### bind mount
+        
+        ![https://docs.docker.com/storage/images/types-of-mounts-bind.png](https://docs.docker.com/storage/images/types-of-mounts-bind.png)
+        
+        > bind mount (출처 : docker 공식 문서 [Use bind mounts](https://docs.docker.com/storage/bind-mounts/))
+        
+        - Docker 초기부터 사용됨
+        - `Volumes`에 비해 기능 제한
+        - 호스트 시스템의 파일 또는 디렉토리가 컨테이너에 마운트 됨
+
+### Plugins
 
 ## PID 1 (`init system`) in Docker
 
