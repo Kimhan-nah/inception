@@ -7,6 +7,7 @@
 		- [가상화 종류](#가상화-종류)
 - [3. Container](#3-container)
 - [4. Docker](#4-docker)
+	- [Docker?](#docker)
 	- [Docker Architecture](#docker-architecture)
 	- [Docker Daemon (`dockerd`)](#docker-daemon-dockerd)
 	- [Docker Client (`docker`)](#docker-client-docker)
@@ -17,6 +18,9 @@
 		- [Networks](#networks)
 		- [Volumes](#volumes)
 		- [Plugins](#plugins)
+	- [Storage Driver](#storage-driver)
+		- [Docker Image Layer](#docker-image-layer)
+		- [Docker Container Layer](#docker-container-layer)
 	- [PID 1 (`init system`) in Docker](#pid-1-init-system-in-docker)
 
 # Inception 
@@ -86,6 +90,15 @@
 - 가상화 기술의 종류
 
 # 4. Docker
+## Docker?
+- 애플리케이션 개발, 배포, 실행을 위한 오픈 플랫폼
+- 컨테이너를 실행하고 관리할 수 있도록 도와주는 도구
+- 컨테이너는 가볍고 애플리케이션을 실행하는 데 필요한 모든 것을 포함하므로 호스트에 현재 설치된 항목에 의존할 필요 없음
+- 이전의 컨테이너 기술에서는 컨테이너의 환경을 완전하고 효율적으로 복원하는 것이 상당히 어려운 일이었음
+    
+    → 도커는 파일을 계층으로 나눠서 저장할 수 있는 `union mount` 기술과 `Docker Hub`라는 원격 저장소를 기본적으로 제공함으로써 이 문제를 해결함
+    
+    → `Docker Images`는 도커의 간편한 인터페이스와 더불어 도커가 성공적으로 자리잡는 데 중요한 역할
 
 ## Docker Architecture
 
@@ -112,13 +125,20 @@
 - Docker Image 저장소
 - 도커는 default로 Docker Hub에서 Image 찾음
 - own private registry도 가능
-- default 공용 레지스트리 :  Docker Hub
 
 ## Docker Objects
 
 ### **Images**
 
 - 컨테이너를 빌드하기 위한 read-only 바이너리 파일
+- 이미지 pull 커맨드 : `docker pull <IMAGE>`
+    - `<IMAGE>` : `<NAMESPACE>/<IMAGE_NAME>:<TAG>` 꼴을 레지스트리에서 내부적으로 파싱되어 사용됨
+    - `<NAMESPACE>` 앞에는 도메인이 들어갈 수 있는데 도커 이미지 저장소의 주소를 가리킴
+        
+        → default가 `Docker Hub` (docker.io)
+        
+    - ex) `docker.io/library/ningx:latest`
+- I**mage 원리(저장 방식) : [Docker Image Layer](#docker-image-layer)**
 
 ### **Containers**
 
@@ -160,8 +180,47 @@
         - Docker 초기부터 사용됨
         - `Volumes`에 비해 기능 제한
         - 호스트 시스템의 파일 또는 디렉토리가 컨테이너에 마운트 됨
+- [`Storage Driver`](#storage-driver) VS `Volumes`
 
 ### Plugins
+
+<br/>
+
+## Storage Driver
+
+- Docker는 Storage Driver를 사용하여 **Image Layer를 저장**하고 **컨테이너의 쓰기 가능한 layer에 데이터를 저장**
+- Storage Driver은 공간 효율성에 최적화
+- But! 쓰기 속도는 특히 copy-on-write file system을 사용하는 Storage Driver의 경우 기본 file system 성능보다 느림
+    
+    **⇒ 컨테이너의 쓰기 가능한 계층은 런타임 시 생성되는 임시 데이터를 저장하는 데 적합**
+    
+- Database Storage 같은 쓰기 집약적인 애플리케이션은 특히 기존 데이터가 read only 계층에 있는 경우 성능 오버헤드의 영향 받음
+    
+    ⇒ 쓰기 집약적인 데이터, 컨테이너의 수명을 넘어 지속되어야 하는 데이터 및 컨테이너 간에 공유 되어야 하는 데이터는 [`Docker Volumes`](#volumes) 사용!
+    
+- `docker info | grep "Storage Dirver"`로 확인 가능
+    - 현재는 지원되는 모든 Linux 배포판에서 선호하는 스토리지 드라이버는  `overlay2` (추가 구성 필요 없음) - 2022년 11월 기준
+- **효율적으로 Storage Driver를 사용하려면,** Docker가 **이미지를 build하고 저장하는 방법**과 **컨테이너에서 이러한 이미지를 사용하는 방법**을 알아야 함!
+    
+    ⇒ [Docker Image Layer](#docker-image-layer), [Docker Container Layer](#docker-container-layer)
+    
+- [Docker storage drivers 공식 문서](https://docs.docker.com/storage/storagedriver/select-storage-driver/)
+
+- [About storage drivers 공식 문서](https://docs.docker.com/storage/storagedriver/)
+
+### Docker Image Layer
+
+![https://docs.docker.com/storage/storagedriver/images/container-layers.jpg](https://docs.docker.com/storage/storagedriver/images/container-layers.jpg)
+
+- 도커 이미지를 구성하는 각 파일을 `Layer`라고 함 (분리된 데이터)
+- 이러한 계층은 일련의 중간 이미지를 형성, 각 계층이 바로 아래의 계층에 종속됨
+- 레이어의 계층은 도커 이미지의 효율적인 수명 주기 관리를 위한 핵심 요소
+
+### Docker Container Layer
+![https://docs.docker.com/storage/storagedriver/images/sharing-layers.jpg](https://docs.docker.com/storage/storagedriver/images/sharing-layers.jpg)
+- 도커 컨테이너가 실행되면 모든 읽기 전용 레이어(`Read Only Layer`)들은 순서대로 쌓은 다음 마지막에 쓰기 가능한 신규 레이어를 추가
+- 그 다음 컨테이너 안에서 발생하는 결과물들이 쓰기 가능 레이어(`Read-Write Layer`)를 기록
+- 아무리 많은 도커 컨테이너를 실행하더라도 기존 읽기 전용 레이어는 변하지 않고, 컨테이너마다 생성된 쓰기 가능한 레이어에 데이터가 쌓이기 때문에 서로 겹치지 않으며 컨테이너가 종료되면 모두 사라짐
 
 ## PID 1 (`init system`) in Docker
 
