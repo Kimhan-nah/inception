@@ -191,7 +191,7 @@
 - Docker는 Storage Driver를 사용하여 **Image Layer를 저장**하고 **컨테이너의 쓰기 가능한 layer에 데이터를 저장**
 - 각 Layer가 서로 상호 작용하는 방식에 대한 세부 정보를 처리함
 - Storage Driver은 공간 효율성에 최적화
-- But! 쓰기 속도는 특히 copy-on-write file system을 사용하는 Storage Driver의 경우 기본 file system 성능보다 느림
+- But! 쓰기는 copy-on-write file system을 사용 -> 기본 file system 성능보다 쓰기 속도가 느림
     
     **⇒ 컨테이너의 쓰기 가능한 계층은 런타임 시 생성되는 임시 데이터를 저장하는 데 적합**
     
@@ -214,9 +214,15 @@
 
 ![https://docs.docker.com/storage/storagedriver/images/container-layers.jpg](https://docs.docker.com/storage/storagedriver/images/container-layers.jpg)
 
-- 도커 이미지를 구성하는 각 파일을 `Layer`라고 함 (분리된 데이터)
+- Docker image는 일련의 `layer`로 구성
+- 도커 이미지를 구성하는 각 파일을 `layer`라고 함 (분리된 데이터)
 - 이러한 계층은 일련의 중간 이미지를 형성, 각 계층이 바로 아래의 계층에 종속됨
-- 레이어의 계층은 도커 이미지의 효율적인 수명 주기 관리를 위한 핵심 요소
+- file system을 수정하는 명령은 계층을 생성함
+    - `FROM`, `COPY`, `RUN` : layer 생성
+    - `LABEL`, `CMD` : image의 metadata 수정 → layer 생성 X
+- 각 layer는 이전의 layer과의 차이의 set임
+- file을 추가, 삭제하는 것은 new layer로 생성됨 → 삭제되어도 이전 layer에서 계속 사용할 수 있으며 images의  total size는 늘어남
+- 이미지가 컨테이너로 실행되면 맨 위에 쓰기 가능한 layer가 추가됨 → [`Container Layer`](#docker-container-layer)
 
 ### Docker Container Layer
 ![https://docs.docker.com/storage/storagedriver/images/sharing-layers.jpg](https://docs.docker.com/storage/storagedriver/images/sharing-layers.jpg)
