@@ -189,6 +189,7 @@
 ## Storage Driver
 
 - Docker는 Storage Driver를 사용하여 **Image Layer를 저장**하고 **컨테이너의 쓰기 가능한 layer에 데이터를 저장**
+- 각 Layer가 서로 상호 작용하는 방식에 대한 세부 정보를 처리함
 - Storage Driver은 공간 효율성에 최적화
 - But! 쓰기 속도는 특히 copy-on-write file system을 사용하는 Storage Driver의 경우 기본 file system 성능보다 느림
     
@@ -200,6 +201,7 @@
     
 - `docker info | grep "Storage Dirver"`로 확인 가능
     - 현재는 지원되는 모든 Linux 배포판에서 선호하는 스토리지 드라이버는  `overlay2` (추가 구성 필요 없음) - 2022년 11월 기준
+- 다양한 Storage Driver를 사용할 수 있으며 상황에 따라 장점, 단점이 있음
 - **효율적으로 Storage Driver를 사용하려면,** Docker가 **이미지를 build하고 저장하는 방법**과 **컨테이너에서 이러한 이미지를 사용하는 방법**을 알아야 함!
     
     ⇒ [Docker Image Layer](#docker-image-layer), [Docker Container Layer](#docker-container-layer)
