@@ -154,11 +154,14 @@
 
 - 컨테이너에서 생성되고 사용되는 데이터를 유지하기 위해 선호되는 메커니즘
 - 컨테이너와 관련된 특별한 유형의 디렉터리
+- 컨테이너 내부 폴더와 컨테이너 외부 폴더를 연결하는 것(`mount`)
+  - 로컬 폴더와 컨테이너 내부 폴더는 격리되어 있으나 `volumes`을 이용해 연결이 가능하도록 만들 수 있다는 의미
 - 모든 데이터 유형을 저장할 수 있음 (코드, 로그 파일 등)
 - 컨테이너 간에 데이터 공유 가능
 - 이미지가 업데이트 될 때 데이터 볼륨에 영향 X → 컨테이너가 컴퓨터에서 삭제된 경우에도 데이터 볼륨은 남아서 여전히 제어 가능
+- `volumes` 종류 : `named volumes`, `unnamed? volumes`		<!-- 수정 필요 -->
 - `bind mount`는 호스트 시스템의 디렉토리 구조와 OS에 따라 다르지만 `Volumes`은 도커에서 완전히 관리함
-    - `volumes` VS `bind mount`
+    - `volumes (mount)` VS `bind mount` VS `tmpfs mount` : mount 종류
         
         ### Volumes
         
@@ -166,6 +169,7 @@
         
         > volumes (출처 : docker 공식 문서 [Use volumes](https://docs.docker.com/storage/volumes/))
         
+        - mount 종류 중 best 방식
         - `volumes`가 `bind mount` 보다 백업 또는 마이그레이션이 쉬움
         - Docker CLI command 또는 Docker API 사용하여 `Volumes` 관리
         - `Volumes`는 Linux, Windows 컨테이너 모두에서 작동함
@@ -173,6 +177,7 @@
         - `Volumes` 드라이버를 사용하면 원격 호스트 또는 클라우드 제공자에 `Volumes`을 저장하거나 `Volumes`의 내용을 암호화하거나 다른 기능을 추가할 수 있음
         - 새 `Volumes`는 컨테이너에 의해 미리 채워진 콘텐츠를 가질 수 있음
         - Docker Desktop의 `Volumes`는 Mac, Windows 호스트의 `bind mount`보다 훨씬 높은 성능 제공
+				- Docker CLI로 관리 가능
         
         ### bind mount
         
@@ -181,8 +186,22 @@
         > bind mount (출처 : docker 공식 문서 [Use bind mounts](https://docs.docker.com/storage/bind-mounts/))
         
         - Docker 초기부터 사용됨
-        - `Volumes`에 비해 기능 제한
+        - 호스트 시스템의 파일 또는 디렉토리가 컨테이너에 mount
+        - 파일 또는 디렉토리는 호스트의 전체 경로로 지정됨
+        - Docker CLI command로 관리 X
+        - `bind mount` 성능은 매우 우수하지만, 호스트 시스템에 의존해서 사용되기 때문에  `Volumes`에 비해 기능이 제한적
         - 호스트 시스템의 파일 또는 디렉토리가 컨테이너에 마운트 됨
+      	### tmpfs mount
+
+      ![https://docs.docker.com/storage/images/types-of-mounts-tmpfs.png](https://docs.docker.com/storage/images/types-of-mounts-tmpfs.png)
+        > tmpfs mount (출처 : docker 공식 문서 [tmpfs mount](https://docs.docker.com/storage/tmpfs/))
+      - `tmpfs mount`로 컨테이너를 생성하면, 컨테이너의 writable layer 외부에 file 생성이 가능
+      - `volumes`, `bind mount` 달리 `tmpfs mount`는 임시이며 호스트 메모리에만 지속됨
+       - 컨테이너 중지되면 `tmpfs mount`가 제거되고 거기에 기록된 파일은 유지되지 않음
+    	- 호스트 또는 컨테이너 쓰기 가능 계층에 유지하지 않으려는 민감한 파일을 임시로 저장하는 데 유용
+    	- 다른 mount와는 달리 컨테이너 간 공유 X
+    	- Only Linux 환경에서 Docker 실행하는 경우에만 사용 가능
+
 - [`Storage Driver`](#storage-driver) VS `Volumes`
 
 ### Plugins
