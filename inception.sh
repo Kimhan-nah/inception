@@ -14,6 +14,7 @@
 apt update
 apt install -y sudo
 sudo apt install -y apt-transport-https
+sudo apt install -y ssh
 sudo apt install -y ca-certificates
 sudo apt install -y curl
 sudo apt install -y software-properties-common
