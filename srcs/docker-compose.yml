@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  # MariaDB
+  mariadb:
+    build:
+      context: ./requirements/maraidb
+      image: mariadb
+      # tmp volumes
+      volumes:
+        - mariadb:/var/lib/mysql
+      env_file:
+        - .env
+
