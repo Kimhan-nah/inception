@@ -1,23 +1,38 @@
 #!/bin/sh
 
-echo "start shell script!"
+# Exit shell script when commands fail
+set -e
+# set -ex
 
-# start mariadbd server on background
-mariadb-install-db --user=mysql &
-mariadbd
+# Check system table is already installed
+if [ -d /var/lib/mysql/mysql ]
+then
+	echo "database already installed"
+else
+	# Initialization mariadb data directory
+	mariadb-install-db --user=mysql 
 
-# Query tmp file
-echo "make query file"
-cat << EOF > query_file
-ALTER USER 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD'
-CREATE USER '$MYSQL_USER' IDENTIFIED BY '$MYSQL_PASSWORD';
-# GRANT ALL PRIVILEGES ON 
-EOF
+	# Start mariadbd (server) in background
+	mariadbd &
 
-# check mariadbd (server) started
+	# Check mariadbd (server) is started
+	mariadb-admin ping --wait=1 --connect-timeout=30
 
+	mariadb -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD'; \
+	CREATE DATABASE wordpress; \
+	CREATE USER '$MYSQL_USER'@'localhost' IDENTIFIED BY $MYSQL_USER_PASSWORD; \
+	GRANT ALL PRIVILEGES ON wordpress.* To '$MYSQL_USER'@'localhost';"
+	
+	# Query
+	# mariadb -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'root42'; \
+	# CREATE DATABASE wordpress; \
+	# CREATE USER 'hannkim'@'localhost' IDENTIFIED BY 'hannkim42'; \
+	# GRANT ALL PRIVILEGES ON wordpress.* To 'hannkim'@'localhost';"
 
-# Run Query
-mariadb < query_file
+	# Stop mariadbd (server)
+	mariadb-admin -p$MYSQL_ROOT_PASSWORD shutdown 
+	# mariadb-admin -proot42 shutdown 
+fi
 
-rm query_file
+# exec mariadbd in foreground
+exec "$@"

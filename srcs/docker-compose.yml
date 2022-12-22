@@ -4,11 +4,38 @@ services:
   # MariaDB
   mariadb:
     build:
-      context: ./requirements/maraidb
-      image: mariadb
-      # tmp volumes
-      volumes:
-        - mariadb:/var/lib/mysql
-      env_file:
-        - .env
+      context: ./requirements/mariadb
+    image: mariadb
+    # tmp volumes
+    volumes:
+      - mariadb_volume:/var/lib/mysql
+    env_file: ./.env
+    restart: "always"
+    networks:
+      - inception
+
+  # wordpress
+
+
+networks:
+  inception:
+    name: inception
+    driver: bridge
+
+volumes:
+  mariadb_volume:
+    name: mariadb_volume
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/hannkim/data/db
+  wordpress_volume:
+    name: wordpress_volume
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/hannkim/data/wordpress
+
 
