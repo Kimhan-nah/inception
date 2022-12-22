@@ -5,8 +5,9 @@ services:
   mariadb:
     build:
       context: ./requirements/mariadb
+    # $MYSQL_HOST
     image: mariadb
-    # tmp volumes
+    container_name: mariadb
     volumes:
       - mariadb_volume:/var/lib/mysql
     env_file: ./.env
@@ -15,6 +16,16 @@ services:
       - inception
 
   # wordpress
+  wordpress:
+    build:
+      context: ./requirements/wordpress
+    image: wordpress
+    volumes:
+      -wordpress_volume:/
+    env_file: ./.env
+    restart: "always"
+    networks:
+      - inception
 
 
 networks:
@@ -37,5 +48,3 @@ volumes:
       type: none
       o: bind
       device: /home/hannkim/data/wordpress
-
-

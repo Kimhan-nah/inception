@@ -19,7 +19,7 @@ else
 	mariadb-admin ping --wait=1 --connect-timeout=30
 
 	mariadb -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD'; \
-	CREATE DATABASE wordpress; \
+	CREATE DATABASE $MYSQL_DATABASE; \
 	CREATE USER '$MYSQL_USER'@'localhost' IDENTIFIED BY $MYSQL_USER_PASSWORD; \
 	GRANT ALL PRIVILEGES ON wordpress.* To '$MYSQL_USER'@'localhost';"
 	
