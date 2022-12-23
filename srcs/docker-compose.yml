@@ -6,7 +6,7 @@ services:
     build:
       context: ./requirements/mariadb
     # $MYSQL_HOST
-    image: mariadb
+    image: mariadb:v1
     container_name: mariadb
     volumes:
       - mariadb_volume:/var/lib/mysql
@@ -19,14 +19,33 @@ services:
   wordpress:
     build:
       context: ./requirements/wordpress
-    image: wordpress
+    image: wordpress:v1
+    container_name: wordpress
+    depends_on:
+      - mariadb
     volumes:
-      -wordpress_volume:/
+      - wordpress_volume:/var/www/wordpress
     env_file: ./.env
     restart: "always"
     networks:
       - inception
 
+  # nginx
+  nginx:
+    build:
+      context: ./requirements/nginx
+    image: nginx:v1
+    container_name: nginx
+    depends_on:
+      - wordpress
+    volumes:
+      - wordpress_volume:/var/www/wordpress
+    env_file: ./.env
+    restart: "always"
+    networks:
+      - inception
+    ports:
+      - "80:80"
 
 networks:
   inception:
