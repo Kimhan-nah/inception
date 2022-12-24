@@ -36,7 +36,6 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 	mkdir -p /var/www/wordpress && \
 	adduser -D -S -H -u 82 -G www-data www-data && \
 	chown -R www-data:www-data /var/www/wordpress
-	# wp core download --allow-root --path=/var/www/wordpress
 
 # Copy php-fpm config file
 COPY ./conf/www.conf /etc/php8/php-fpm.d/www.conf
@@ -51,7 +50,5 @@ RUN chmod +x /tmp/wordpress_setting.sh
 
 EXPOSE 9000
 
-ENTRYPOINT [ "/tmp/wordpress_setting.sh" ]
+ENTRYPOINT [ "/tmp/wordpress_setting.sh", "php-fpm8", "-F"]
 
-# for using "docker run --option" (unless too many arguments error)
-CMD [ "php-fpm8", "-F" ]
