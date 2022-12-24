@@ -23,24 +23,31 @@ RUN apk update && \
 							php8-ctype \
 							php8-dom \
 							php8-simplexml \
-							mariadb-client
+							mariadb-client \
+							php-phar \
+							curl
 
+# Install wp-cli
+# Add 'www-data' user for nginx(included 'www-data' grouup)
+# Initialize '/var/www/wordpress' database directory
+RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+	mv wp-cli.phar /usr/local/bin/wp && \
+	chmod +x /usr/local/bin/wp && \
+	mkdir -p /var/www/wordpress && \
+	adduser -D -S -H -u 82 -G www-data www-data && \
+	chown -R www-data:www-data /var/www/wordpress
+	# wp core download --allow-root --path=/var/www/wordpress
 
+# Copy php-fpm config file
 COPY ./conf/www.conf /etc/php8/php-fpm.d/www.conf
 
-# COPY ./conf/wp-config.php /var/www/wordpress/wp-config.php
+# Copy wp config file
 COPY ./conf/wp-config.php /tmp/wp-config.php
 
+# Copy entrypoint shell script
 COPY ./tools/wordpress_setting.sh /tmp/wordpress_setting.sh
 
 RUN chmod +x /tmp/wordpress_setting.sh
-
-RUN adduser -D -S -H -u 82 -G www-data www-data
-# RUN adduser -D -S -H -u 82 -G www-data www-data
-
-# RUN adduser -u 1001 -D nginx
-
-# RUN adduser -D nginx && chown -R nginx /var/www/wordpress
 
 EXPOSE 9000
 

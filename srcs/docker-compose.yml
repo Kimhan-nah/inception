@@ -7,6 +7,7 @@ services:
       context: ./requirements/mariadb
     # $MYSQL_HOST
     image: mariadb:v1
+    init: true
     container_name: mariadb
     volumes:
       - mariadb_volume:/var/lib/mysql
@@ -20,6 +21,7 @@ services:
     build:
       context: ./requirements/wordpress
     image: wordpress:v1
+    init: true
     container_name: wordpress
     depends_on:
       - mariadb
@@ -35,6 +37,7 @@ services:
     build:
       context: ./requirements/nginx
     image: nginx:v1
+    init: true
     container_name: nginx
     depends_on:
       - wordpress

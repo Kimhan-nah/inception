@@ -10,3 +10,38 @@
 #                                                                              #
 # **************************************************************************** #
 
+PROJECT_NAME	=	inception
+
+USER			=	hannkim
+
+COMPOSE_SOURCE	=	./srcs/docker-compose.yml
+
+VOLUME_PATH		=	/home/$(USER)/data/db \
+					/home/$(USER)/data/wordpress
+
+.PHONY	:	all
+all		:
+			mkdir -p $(VOLUME_PATH)
+			docker-compose -f $(COMPOSE_SOURCE) up --build
+
+.PHONY	:	clean
+clean	:
+			docker-compose -f $(COMPOSE_SOURCE) down
+
+.PHONY	:	fclean
+fclean:
+			docker-compose -f $(COMPOSE_SOURCE) down \
+			--remove-orphans --rmi all -v
+
+.PHONY	:	ffclean
+ffclean:	fclean
+			sudo rm -rf $(VOLUME_PATH)
+			docker image prune
+			docker container prune
+
+.PHONY	:	re
+re		:	ffclean
+			$(MAKE) all
+
+# .PHONY	: restart
+# restart	: re all
