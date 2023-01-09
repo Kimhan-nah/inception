@@ -21,9 +21,22 @@
 	- [Storage Driver](#storage-driver)
 		- [Docker Image Layer](#docker-image-layer)
 		- [Docker Container Layer](#docker-container-layer)
+	- [Signal in Docker](#signal-in-docker)
 	- [PID 1 (`init system`) in Docker](#pid-1-init-system-in-docker)
 		- [docker-init](#docker-init)
 	- [Docker Commands](#docker-commands)
+- [Dockerfile](#dockerfile)
+	- [Docker Cache \& Dockerfile](#docker-cache--dockerfile)
+	- [`RUN` Instruction](#run-instruction)
+	- [`CMD` Instruction](#cmd-instruction)
+	- [`ENTRYPOINT` Instruction](#entrypoint-instruction)
+		- [`CMD` \& `ENTRYPOINT`](#cmd--entrypoint)
+	- [`EXPOSE` Instruction](#expose-instruction)
+	- [`ADD` Instruction](#add-instruction)
+	- [`COPY` Instruction](#copy-instruction)
+	- [`VOLUME` Instruction](#volume-instruction)
+
+
 
 # Inception 
   - Summary: This document is a System Administration related exercise.
@@ -256,6 +269,23 @@
   - 그 다음 컨테이너 안에서 발생하는 결과물들이 쓰기 가능 레이어(`Read-Write Layer`)를 기록
   - 아무리 많은 도커 컨테이너를 실행하더라도 기존 읽기 전용 레이어는 변하지 않고, 컨테이너마다 생성된 쓰기 가능한 레이어에 데이터가 쌓이기 때문에 서로 겹치지 않으며 컨테이너가 종료되면 모두 사라짐
 
+## Signal in Docker
+
+- `docker stop` → `SIGTERM` signal을 컨테이너에 보냄 → 10초간 컨테이너가 종료되지 않으면 `SIGKILL`
+- docker run, entrypoint
+    - `docker run <image> <executable>` 의 컨테이너를 실행할 때 사용하는 `<executable>` 는 해당 컨테이너에서 PID 1로 작동
+- Dockerfile에서의 ENTRYPOINT에는 보통 `exec form`, `shell form`
+    - `exec form` : JSON array 형태로 직접 실행
+        - `<executable>` 이 PID 1 됨
+    - `shell form` : /bin/sh -c 형태로 실행
+        - 내부적으로 fork하기 때문에 subprocess로 명령어가 작동함.
+        - 따라서 shell form /bin/sh가 PID 1이 되고, `<executable>` 이 PID 2 이후의 것을 받음
+
+⇒ 따라서! 우리는 `docker stop` 으로 `SIGTERM` 시그널로 정상적인 작동하도록 해야함!
+
+1. `shell form` 쓰지 말고, `exec form` 사용하삼!
+2. initialization process 사용해서 PID 1 설정하삼!
+
 ## PID 1 (`init system`) in Docker
 
   - 리눅스 커널의 PID와 마찬가지로 컨테이너에서 실행된 첫 번째 프로세스는 PID 1을 얻는다
@@ -280,3 +310,83 @@
     -  기본 이미지에서 설정되어 있는 것들의 대부분을 run option으로 재정의할 수 있음
   - `docker commit [OPTIONS] CONTAINER [REPOSITORY[:TAG]]`
     - Create a new image from a container's changes
+
+
+# Dockerfile
+
+## Docker Cache & Dockerfile
+
+- image layer는 여러 layer로 구성되어 있는데, 매번 모든 layer를 빌드한다면 매우 느려짐
+    
+    **⇒ Docker Cache!**
+- Layer에서 변경사항이 없으면 기존 Layer 재사용 → 중복 방지 → build 속도 높임 & 저장공간 효율
+- Dockerfile 명령어마다 캐싱 사용하는 기준이 다름!
+    - ADD, COPY 제외한 명령어는 명령어 string만 동일하면 캐싱 사용
+    - ADD, COPY : string + 해당 파일의 변경 유무까지 파악해서 캐싱 사용
+- 한 번 캐싱을 사용할 수 없는 구간이 발생하면, in order로 진행되는 Docker 빌드 특성상 그 아래 모든 layer는 캐싱을 사용할 수 없음
+
+## `RUN` Instruction
+
+- shell form : `/bin/sh -c` 로 실행됨
+- exec form : `exec` 로 실행됨
+    - ex. `RUN ["/bin/bash", "-c", "echo hello"]`
+- **도커 이미지를 빌드하는 순간에 실행이 되는 명령어 (이미지 빌드)**
+- 라이브러리 설치하는 부분에서 주로 활용
+- cache는 다음 build에서 자동으로 invalidate되지 않음 (?)
+    
+    → ADD, COPY에 의해 RUN cache는 invalidate 됨 (?)
+    
+    → 상황에 맞게 `docker build --no-cache` 사용해야 함
+    
+
+## `CMD` Instruction
+
+- **이미지로부터 컨테이너 생성하여 최초로 실행할 때 수행 (컨테이너 실행)**
+- shell form, exec form 사용하면, 이미지로부터 컨테이너가 실행될 때 CMD 세팅해줌 (???)
+- Dockerfile에서 한 번만 사용 가능
+    - 여러 개 있으면 마지막 CMD 적용
+- ENTRYPOINT 같이 사용되면, 모두 JSON array 포맷으로 넘어감
+    - ENTRYPOINT 명령문으로 지정된 커맨드에 디폴트로 넘길 파라미터 지정
+
+## `ENTRYPOINT` Instruction
+
+- **컨테이너가 생성되고 최초로 실행할 때 항상 수행되는 명령어를 지정함 (컨테이너 실행)**
+    - CMD와 차이
+        - ENTRYPOINT는 항상 실행되고, CMD는 `docker run` 명령어 실행할 때 변경이 가능함
+        
+        → `docker run` 에서 뒤에 인자들로 CMD가 덮어쓰기 되기 때문에 변경이 가능
+        
+- 컨테이너가 executable로 실행되도록 설정
+- CMD Instruction 덮어씀
+- `docker run <image> -d` : 같은 형태로 ENTRYPOINT에 인자를 넘길 수 있으며
+- `docker run --entrypoint` : ENTRYPOINT Instruction 덮어쓸 수 있음
+- ENTRYPOINT 여러 개 있으면 마지막에 있는 것 적용
+- ENTRYPOINT는 사용하는 컨테이너가 executable일 때 정의해야 함
+
+### `CMD` & `ENTRYPOINT`
+
+- Dockerfile에는 적어도 하나의 ENTRYPOINT나 CMD 존재해야 함
+
+## `EXPOSE` Instruction
+
+- 컨테이너가 런타임에서 특정 포트를 listen하도록 정보를 제공
+    - 실제로 포트를 publish 하는 것 아님
+    - just 컨테이너를 실행하는 유저에게 정보 제공하는 역할
+    - 컨테이너에서 publish하려면, `docker run -P` 옵션 사용해야 함
+- TCP, UDP 선택 가능 (default TCP)
+
+## `ADD` Instruction
+
+- src의 새로운 파일이나 디렉토리, file URL 복사해서 이미지의 dest path에 추가함
+- 파일이나 디렉토리 추가하는 경우, build context의 상대경로로 적용되며, 각 src는 `*` 사용 가능
+
+## `COPY` Instruction
+
+- RUN과 비슷하지만, URL 사용할 수 없고 로컬 tar 파일을 자동으로 압축 해제 해주지 않음
+- COPY가 더 직관적이기 때문에, 꼭 필요하지 않으면 COPY 사용하는 게 조히음
+
+## `VOLUME` Instruction
+
+- 해당 이름으로 `mount point`를 생성하고 호스트나 다른 컨테이너와 별개의 volume을 holding함
+
+[Best practices for writing Dockerfiles](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/)
