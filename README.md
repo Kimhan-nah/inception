@@ -41,7 +41,7 @@
 
 # Inception 
   - Summary: This document is a System Administration related exercise.
-  - Version: 1
+  - Version: 1.2
   - This project aims to broaden your knowledge of system administration by using Docker. You will virtualize several Docker images, creating them in your new personal virtual machine.
 
 
