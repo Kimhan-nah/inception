@@ -1,6 +1,7 @@
 # Table of Contents
 - [Table of Contents](#table-of-contents)
 - [Inception](#inception)
+- [0. MariaDB, Wordpress, Nginx WIKI](#0-mariadb-wordpress-nginx)
 - [1. Alpine Linux](#1-alpine-linux)
 - [2. Virtualization](#2-virtualization)
 		- [가상화란?](#가상화란)
@@ -42,6 +43,9 @@
   - Summary: This document is a System Administration related exercise.
   - Version: 1
 
+
+# 0. MariaDB, Wordpress, Nginx
+  - [구구절절 WIKI](https://github.com/Kimhan-nah/inception/wiki)
 
 # 1. Alpine Linux
 
